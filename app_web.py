@@ -6,7 +6,7 @@ import streamlit as st
 
 # Configuration de la page Streamlit
 st.set_page_config(
-    page_title="Smart Grocery List • Studio Visual Pro",
+    page_title="Smart Grocery List • Mobile Pro",
     page_icon="⚡",
     layout="wide"
 )
@@ -43,7 +43,6 @@ COULEURS_EMOJI_BG = {
     "Boissons": "#FCE7F3",
 }
 
-# Dictionnaire de correspondance Mot-Clé -> Émoticône
 EMOJI_KEYWORDS = [
     (["poulet", "dinde", "volaille"], "🍗"),
     (["boeuf", "bœuf", "steak", "haché", "veau", "carnivore"], "🥩"),
@@ -236,30 +235,30 @@ toutes_recettes = list(dataframes["Recettes"].columns[1:]) if "Recettes" in data
 
 header_col1, header_col2 = st.columns([3, 1])
 with header_col1:
-    st.title("⚡ Smart Grocery List • Studio Visual Pro")
+    st.title("⚡ Smart Grocery List")
 with header_col2:
     nb_sel = len(st.session_state.selections)
     st.markdown(
-        f"<div style='background-color:#EEF2FF; border:1.5px solid #C7D2FE; border-radius:20px; padding:10px 20px; text-align:center;'>"
-        f"<span style='color:#4338CA; font-weight:bold; font-size:16px;'>{nb_sel} item{'s' if nb_sel > 1 else ''} sélectionné{'s' if nb_sel > 1 else ''}</span>"
+        f"<div style='background-color:#EEF2FF; border:1.5px solid #C7D2FE; border-radius:15px; padding:8px 12px; text-align:center; margin-top:10px;'>"
+        f"<span style='color:#4338CA; font-weight:bold; font-size:14px;'>{nb_sel} item{'s' if nb_sel > 1 else ''}</span>"
         f"</div>",
         unsafe_allow_html=True
     )
 
 st.markdown("---")
 
-noms_onglets = list(dataframes.keys()) + ["📋 Ma Liste de Courses"]
+noms_onglets = list(dataframes.keys()) + ["📋 Ma Liste"]
 onglets = st.tabs(noms_onglets)
 
 if "Recettes" in dataframes:
     idx_recettes = list(dataframes.keys()).index("Recettes")
     with onglets[idx_recettes]:
-        col_main_recettes, col_postit = st.columns([3, 1])
+        col_main_recettes, col_postit = st.columns([1, 1]) if st.get_option("client.showSidebarNavigation") else st.columns([3, 1]) # Adaptation mobile intelligente
         
         with col_main_recettes:
-            top_bar = st.columns([2, 3])
+            top_bar = st.columns([1, 1])
             with top_bar[0]:
-                if st.button("🎲 Proposer 6 autres recettes", use_container_width=True):
+                if st.button("🎲 6 autres recettes", key="btn_autres_recettes", use_container_width=True):
                     non_vues = [r for r in toutes_recettes if r not in st.session_state.recettes_vues]
                     if len(non_vues) < 6:
                         st.session_state.recettes_vues.clear()
@@ -276,19 +275,20 @@ if "Recettes" in dataframes:
 
             with top_bar[1]:
                 st.markdown(
-                    "<div style='display:flex; gap:10px; justify-content:flex-end; align-items:center; height:100%;'>"
-                    f"<span style='background-color:{PALETTE['vege_bg']}; color:{PALETTE['vege_txt']}; padding:6px 12px; border-radius:12px; font-weight:bold; font-size:13px;'>🥦 Végé</span>"
-                    f"<span style='background-color:{PALETTE['pesce_bg']}; color:{PALETTE['pesce_txt']}; padding:6px 12px; border-radius:12px; font-weight:bold; font-size:13px;'>🐟 Pescé</span>"
-                    f"<span style='background-color:{PALETTE['viande_bg']}; color:{PALETTE['viande_txt']}; padding:6px 12px; border-radius:12px; font-weight:bold; font-size:13px;'>🥩 Viande</span>"
+                    "<div style='display:flex; gap:6px; justify-content:center; align-items:center; height:100%; margin-top:5px;'>"
+                    f"<span style='background-color:{PALETTE['vege_bg']}; color:{PALETTE['vege_txt']}; padding:4px 8px; border-radius:10px; font-weight:bold; font-size:11px;'>🥦 Végé</span>"
+                    f"<span style='background-color:{PALETTE['pesce_bg']}; color:{PALETTE['pesce_txt']}; padding:4px 8px; border-radius:10px; font-weight:bold; font-size:11px;'>🐟 Pescé</span>"
+                    f"<span style='background-color:{PALETTE['viande_bg']}; color:{PALETTE['viande_txt']}; padding:4px 8px; border-radius:10px; font-weight:bold; font-size:11px;'>🥩 Viande</span>"
                     "</div>",
                     unsafe_allow_html=True
                 )
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            lignes_recettes = [st.session_state.recettes_actuelles_6[i:i+3] for i in range(0, len(st.session_state.recettes_actuelles_6), 3)]
+            # Utilisation de 2 colonnes par défaut sur mobile pour éviter l'effet trop étroit de 3 colonnes
+            lignes_recettes = [st.session_state.recettes_actuelles_6[i:i+2] for i in range(0, len(st.session_state.recettes_actuelles_6), 2)]
             for ligne in lignes_recettes:
-                cols_card = st.columns(3)
+                cols_card = st.columns(2)
                 for c_idx, item_name in enumerate(ligne):
                     with cols_card[c_idx]:
                         cle = ("Recettes", item_name)
@@ -304,21 +304,21 @@ if "Recettes" in dataframes:
                         card_bg_color = PALETTE["card_selected"] if est_selectionne else PALETTE["card_bg"]
                         border_col = PALETTE["border_selected"] if est_selectionne else PALETTE["border_card"]
                         
-                        badge_html = f"<span style='background-color:{bg_c}; color:{txt_c}; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:bold;'>{label_reg}</span>" if label_reg else "<span></span>"
+                        badge_html = f"<span style='background-color:{bg_c}; color:{txt_c}; padding:2px 6px; border-radius:8px; font-size:10px; font-weight:bold;'>{label_reg}</span>" if label_reg else "<span></span>"
                         check_symbol = '✓' if est_selectionne else '○'
                         check_color = PALETTE['border_selected'] if est_selectionne else '#94A3B8'
 
                         st.markdown(
-                            f"<div style='background-color:{card_bg_color}; border:2px solid {border_col}; border-radius:18px; padding:16px; text-align:center; min-height:190px; display:flex; flex-direction:column; justify-content:space-between;'>"
+                            f"<div style='background-color:{card_bg_color}; border:2px solid {border_col}; border-radius:15px; padding:12px; text-align:center; min-height:160px; display:flex; flex-direction:column; justify-content:space-between;'>"
                             f"<div>"
                             f"<div style='display:flex; justify-content:space-between; align-items:center;'>"
                             f"{badge_html}"
-                            f"<span style='font-size:18px; font-weight:bold; color:{check_color};'>{check_symbol}</span>"
+                            f"<span style='font-size:16px; font-weight:bold; color:{check_color};'>{check_symbol}</span>"
                             f"</div>"
-                            f"<div style='background-color:{COULEURS_EMOJI_BG['Recettes']}; border-radius:16px; width:54px; height:54px; display:flex; align-items:center; justify-content:center; margin:10px auto;'>"
-                            f"<span style='font-size:30px;'>{emoji}</span>"
+                            f"<div style='background-color:{COULEURS_EMOJI_BG['Recettes']}; border-radius:12px; width:45px; height:45px; display:flex; align-items:center; justify-content:center; margin:8px auto;'>"
+                            f"<span style='font-size:24px;'>{emoji}</span>"
                             f"</div>"
-                            f"<div style='font-weight:bold; font-size:14px; color:{PALETTE['text_main']};'>{item_name}</div>"
+                            f"<div style='font-weight:bold; font-size:13px; color:{PALETTE['text_main']};'>{item_name}</div>"
                             f"</div>"
                             f"</div>",
                             unsafe_allow_html=True
@@ -326,7 +326,7 @@ if "Recettes" in dataframes:
 
                         c_btn1, c_btn2 = st.columns(2)
                         with c_btn1:
-                            btn_label = "Désélectionner" if est_selectionne else "Sélectionner"
+                            btn_label = "✅" if est_selectionne else "➕"
                             if st.button(btn_label, key=f"sel_rec_{item_name}", use_container_width=True):
                                 if est_selectionne:
                                     del st.session_state.selections[cle]
@@ -334,13 +334,12 @@ if "Recettes" in dataframes:
                                     st.session_state.selections[cle] = 1
                                 st.rerun()
                         with c_btn2:
-                            if st.button("🔍 Ingrédients", key=f"dt_rec_{item_name}", use_container_width=True):
+                            if st.button("🔍", key=f"dt_rec_{item_name}", use_container_width=True):
                                 @st.dialog(f"Composition : {item_name}", width="large")
                                 def afficher_popup_ingredients(sh, itm):
                                     df_s = dataframes[sh]
                                     col_ing = df_s.columns[0]
                                     st.markdown(f"### {obtenir_emoticon_item(itm, sh)} {itm}")
-                                    st.markdown(f"**Catégorie :** {sh}")
                                     st.markdown("---")
                                     ingredients_trouves = []
                                     for _, row in df_s.iterrows():
@@ -350,7 +349,7 @@ if "Recettes" in dataframes:
                                             qte_s = str(int(val)) if isinstance(val, float) and val.is_integer() else str(val)
                                             ingredients_trouves.append((ing, qte_s))
                                     if not ingredients_trouves:
-                                        st.info("Aucun ingrédient spécifique renseigné.")
+                                        st.info("Aucun ingrédient spécifique.")
                                     else:
                                         for ing_n, q_s in ingredients_trouves:
                                             i_em = obtenir_emoticon_item(ing_n)
@@ -359,33 +358,30 @@ if "Recettes" in dataframes:
 
         with col_postit:
             st.markdown(
-                f"<div style='background-color:{PALETTE['postit_bg']}; border:2px solid {PALETTE['postit_border']}; border-radius:18px; padding:20px;'>"
-                f"<h3 style='color:{PALETTE['postit_txt']}; margin-top:0; font-size:18px;'>📌 MES RECETTES</h3>",
+                f"<div style='background-color:{PALETTE['postit_bg']}; border:2px solid {PALETTE['postit_border']}; border-radius:15px; padding:15px; margin-top:10px;'>"
+                f"<h3 style='color:{PALETTE['postit_txt']}; margin-top:0; font-size:16px;'>📌 MES RECETTES</h3>",
                 unsafe_allow_html=True
             )
             recettes_choisies = [item for (sheet, item) in st.session_state.selections.keys() if sheet == "Recettes"]
-            st.markdown(f"<p style='color:#B45309; font-weight:bold; font-size:14px;'>{len(recettes_choisies)} recette(s) sélectionnée(s)</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#B45309; font-weight:bold; font-size:13px;'>{len(recettes_choisies)} sélectionnée(s)</p>", unsafe_allow_html=True)
             
             if not recettes_choisies:
-                st.info("Aucune recette cochée.")
+                st.info("Aucune recette.")
             else:
                 for r in recettes_choisies:
                     em = obtenir_emoticon_item(r, "Recettes")
-                    st.markdown(f"• {em} **{r}**")
+                    st.markdown(f"• {em} {r}")
             
             st.markdown("</div>", unsafe_allow_html=True)
             
             if recettes_choisies:
-                # Ajout de key unique pour éviter le conflit d'ID
-                if st.button("👁️ Prévisualiser & Copier", key="preview_recettes_postit", use_container_width=True):
-                    texte_rec = "🍽️ MES RECETTES SÉLECTIONNÉES :\n" + "═" * 35 + "\n"
+                if st.button("👁️ Aperçu / Copier", key="preview_recettes_postit", use_container_width=True):
+                    texte_rec = "🍽️ MES RECETTES :\n" + "═" * 25 + "\n"
                     for r in recettes_choisies:
                         texte_rec += f"• {obtenir_emoticon_item(r, 'Recettes')} {r}\n"
-                    @st.dialog("Aperçu - Liste des Recettes")
+                    @st.dialog("Aperçu")
                     def pop_preview_rec():
-                        st.text_area("Texte :", value=texte_rec, height=200)
-                        if st.button("📋 Copier dans le presse-papier", key="copy_btn_rec"):
-                            st.toast("Texte prêt à être copié !")
+                        st.text_area("Texte :", value=texte_rec, height=180)
                     pop_preview_rec()
 
 for idx, sheet_name in enumerate(dataframes.keys()):
@@ -395,7 +391,7 @@ for idx, sheet_name in enumerate(dataframes.keys()):
         df = dataframes[sheet_name]
         items = list(df.columns[1:])
         total_items = len(items)
-        items_par_page = 12
+        items_par_page = 8  # Réduit à 8 pour charger plus vite et être plus lisible sur mobile
         total_pages = max(1, (total_items + items_par_page - 1) // items_par_page)
 
         if sheet_name not in st.session_state.pages_standard:
@@ -408,25 +404,26 @@ for idx, sheet_name in enumerate(dataframes.keys()):
 
         c_p1, c_p2, c_p3 = st.columns([1, 2, 1])
         with c_p1:
-            if st.button("⬅️ 12 Précédents", key=f"prev_{sheet_name}", disabled=(page_actuelle == 0), use_container_width=True):
+            if st.button("⬅️", key=f"prev_{sheet_name}", disabled=(page_actuelle == 0), use_container_width=True):
                 st.session_state.pages_standard[sheet_name] -= 1
                 st.rerun()
         with c_p2:
             start_idx = page_actuelle * items_par_page
             end_idx = min(start_idx + items_par_page, total_items)
-            st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:16px; padding-top:8px;'>Page {page_actuelle + 1} / {total_pages} ({start_idx + 1}-{end_idx} sur {total_items})</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:14px; padding-top:8px;'>P. {page_actuelle + 1}/{total_pages}</div>", unsafe_allow_html=True)
         with c_p3:
-            if st.button("12 Suivants ➡️", key=f"next_{sheet_name}", disabled=(page_actuelle >= total_pages - 1), use_container_width=True):
+            if st.button("➡️", key=f"next_{sheet_name}", disabled=(page_actuelle >= total_pages - 1), use_container_width=True):
                 st.session_state.pages_standard[sheet_name] += 1
                 st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         items_page = items[start_idx:end_idx]
-        lignes_std = [items_page[i:i+4] for i in range(0, len(items_page), 4)]
+        # Affichage en 2 colonnes sur mobile pour un meilleur confort visuel
+        lignes_std = [items_page[i:i+2] for i in range(0, len(items_page), 2)]
 
         for ligne in lignes_std:
-            cols_std = st.columns(4)
+            cols_std = st.columns(2)
             for c_idx, item_name in enumerate(ligne):
                 with cols_std[c_idx]:
                     cle = (sheet_name, item_name)
@@ -440,15 +437,15 @@ for idx, sheet_name in enumerate(dataframes.keys()):
                     check_color_std = PALETTE['border_selected'] if est_selectionne else '#94A3B8'
 
                     st.markdown(
-                        f"<div style='background-color:{card_bg_color}; border:2px solid {border_col}; border-radius:18px; padding:16px; text-align:center; min-height:180px; display:flex; flex-direction:column; justify-content:space-between;'>"
+                        f"<div style='background-color:{card_bg_color}; border:2px solid {border_col}; border-radius:15px; padding:12px; text-align:center; min-height:150px; display:flex; flex-direction:column; justify-content:space-between;'>"
                         f"<div>"
                         f"<div style='display:flex; justify-content:flex-end; align-items:center;'>"
-                        f"<span style='font-size:18px; font-weight:bold; color:{check_color_std};'>{check_symbol_std}</span>"
+                        f"<span style='font-size:16px; font-weight:bold; color:{check_color_std};'>{check_symbol_std}</span>"
                         f"</div>"
-                        f"<div style='background-color:{COULEURS_EMOJI_BG.get(sheet_name, '#F1F5F9')}; border-radius:16px; width:54px; height:54px; display:flex; align-items:center; justify-content:center; margin:10px auto;'>"
-                        f"<span style='font-size:30px;'>{emoji}</span>"
+                        f"<div style='background-color:{COULEURS_EMOJI_BG.get(sheet_name, '#F1F5F9')}; border-radius:12px; width:45px; height:45px; display:flex; align-items:center; justify-content:center; margin:8px auto;'>"
+                        f"<span style='font-size:24px;'>{emoji}</span>"
                         f"</div>"
-                        f"<div style='font-weight:bold; font-size:14px; color:{PALETTE['text_main']};'>{item_name}</div>"
+                        f"<div style='font-weight:bold; font-size:13px; color:{PALETTE['text_main']};'>{item_name}</div>"
                         f"</div>"
                         f"</div>",
                         unsafe_allow_html=True
@@ -456,7 +453,7 @@ for idx, sheet_name in enumerate(dataframes.keys()):
 
                     c_btn1, c_btn2 = st.columns(2)
                     with c_btn1:
-                        btn_label = "Désélectionner" if est_selectionne else "Sélectionner"
+                        btn_label = "✅" if est_selectionne else "➕"
                         if st.button(btn_label, key=f"sel_{sheet_name}_{item_name}", use_container_width=True):
                             if est_selectionne:
                                 del st.session_state.selections[cle]
@@ -464,13 +461,12 @@ for idx, sheet_name in enumerate(dataframes.keys()):
                                 st.session_state.selections[cle] = 1
                             st.rerun()
                     with c_btn2:
-                        if st.button("🔍 Ingrédients", key=f"dt_{sheet_name}_{item_name}", use_container_width=True):
+                        if st.button("🔍", key=f"dt_{sheet_name}_{item_name}", use_container_width=True):
                             @st.dialog(f"Composition : {item_name}", width="large")
                             def afficher_popup_std(sh, itm):
                                 df_s = dataframes[sh]
                                 col_ing = df_s.columns[0]
                                 st.markdown(f"### {obtenir_emoticon_item(itm, sh)} {itm}")
-                                st.markdown(f"**Catégorie :** {sh}")
                                 st.markdown("---")
                                 ingredients_trouves = []
                                 for _, row in df_s.iterrows():
@@ -480,7 +476,7 @@ for idx, sheet_name in enumerate(dataframes.keys()):
                                         qte_s = str(int(val)) if isinstance(val, float) and val.is_integer() else str(val)
                                         ingredients_trouves.append((ing, qte_s))
                                 if not ingredients_trouves:
-                                    st.info("Aucun ingrédient spécifique renseigné.")
+                                    st.info("Aucun ingrédient spécifique.")
                                 else:
                                     for ing_n, q_s in ingredients_trouves:
                                         i_em = obtenir_emoticon_item(ing_n)
@@ -488,8 +484,6 @@ for idx, sheet_name in enumerate(dataframes.keys()):
                             afficher_popup_std(sheet_name, item_name)
 
 with onglets[-1]:
-    col_panel_gauche, col_panel_droit = st.columns([1, 2])
-
     totaux_ingredients = {}
     for (sheet_name, item_col), multiplier in st.session_state.selections.items():
         df = dataframes[sheet_name]
@@ -512,18 +506,20 @@ with onglets[-1]:
         if ing in st.session_state.quantites_custom:
             totaux_ingredients[ing] = st.session_state.quantites_custom[ing]
 
-    with col_panel_gauche:
-        st.markdown(
-            f"<div style='background-color:{PALETTE['header_bg']}; border:1.5px solid {PALETTE['border_card']}; border-radius:18px; padding:20px;'>"
-            f"<h2 style='color:{PALETTE['text_main']}; margin-top:0;'>Actions & Options</h2>",
-            unsafe_allow_html=True
-        )
-        
-        if st.button("➕ Ajouter un article perso", use_container_width=True):
-            @st.dialog("Ajouter un article hors-liste")
+    # Organisation en pile verticale (parfait pour le mobile au lieu de 2 colonnes trop serrées)
+    st.markdown(
+        f"<div style='background-color:{PALETTE['header_bg']}; border:1.5px solid {PALETTE['border_card']}; border-radius:15px; padding:15px; margin-bottom:15px;'>"
+        f"<h3 style='color:{PALETTE['text_main']}; margin-top:0; font-size:16px;'>⚡ Actions Rapides</h3>",
+        unsafe_allow_html=True
+    )
+    
+    col_act1, col_act2 = st.columns(2)
+    with col_act1:
+        if st.button("➕ Article perso", key="btn_perso_mob", use_container_width=True):
+            @st.dialog("Ajouter un article")
             def pop_ajout_perso():
-                nom_perso = st.text_input("Nom de l'article :")
-                if st.button("Confirmer l'ajout", key="confirm_add_perso"):
+                nom_perso = st.text_input("Nom :")
+                if st.button("Ajouter", key="confirm_add_perso"):
                     if nom_perso and nom_perso.strip():
                         art_c = nom_perso.strip()
                         if art_c not in st.session_state.articles_perso:
@@ -531,108 +527,97 @@ with onglets[-1]:
                         st.rerun()
             pop_ajout_perso()
 
-        # Ajout de key unique pour éviter le conflit d'ID
-        if st.button("👁️ Prévisualiser & Copier", key="preview_global_courses", use_container_width=True):
+        if st.button("👁️ Aperçu liste", key="preview_global_courses", use_container_width=True):
             recettes_choisies = [item for (sheet, item) in st.session_state.selections.keys() if sheet == "Recettes"]
-            texte_complet = ""
-            if recettes_choisies:
-                texte_complet += "🍽️ RECETTES AU MENU CETTE SEMAINE\n" + "═" * 40 + "\n"
-                for r in recettes_choisies:
-                    texte_complet += f" • {obtenir_emoticon_item(r, 'Recettes')} {r}\n"
-                texte_complet += "\n"
-            texte_complet += "📌 LISTE DE COURSES AGRÉGÉE\n" + "═" * 40 + "\n\n"
+            texte_complet = "📌 LISTE DE COURSES\n" + "═" * 25 + "\n\n"
             for ing, qte in sorted(totaux_ingredients.items()):
                 q_str = str(int(qte)) if isinstance(qte, float) and qte.is_integer() else str(qte)
-                texte_complet += f" ☐  {obtenir_emoticon_item(ing)} {ing:<28} (x{q_str})\n"
+                texte_complet += f" ☐ {obtenir_emoticon_item(ing)} {ing} (x{q_str})\n"
 
-            @st.dialog("Aperçu - Liste Global & Recettes")
+            @st.dialog("Aperçu")
             def pop_preview_global():
-                st.text_area("Texte prêt à copier :", value=texte_complet, height=300)
-                st.info("Vous pouvez copier le texte ci-dessus.")
+                st.text_area("Copier :", value=texte_complet, height=250)
             pop_preview_global()
 
-        if st.button("💾 Enregistrer en Fichier (.txt)", use_container_width=True):
-            recettes_choisies = [item for (sheet, item) in st.session_state.selections.keys() if sheet == "Recettes"]
-            texte_complet = ""
-            if recettes_choisies:
-                texte_complet += "🍽️ RECETTES AU MENU CETTE SEMAINE\n" + "═" * 40 + "\n"
-                for r in recettes_choisies:
-                    texte_complet += f" • {obtenir_emoticon_item(r, 'Recettes')} {r}\n"
-                texte_complet += "\n"
-            texte_complet += "📌 LISTE DE COURSES AGRÉGÉE\n" + "═" * 40 + "\n\n"
-            for ing, qte in sorted(totaux_ingredients.items()):
-                q_str = str(int(qte)) if isinstance(qte, float) and qte.is_integer() else str(qte)
-                texte_complet += f" ☐  {obtenir_emoticon_item(ing)} {ing:<28} (x{q_str})\n"
-
-            st.download_button(
-                label="Télécharger le fichier .txt",
-                data=texte_complet,
-                file_name="liste_de_courses.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
-
-        if st.button("🗑️ Remettre à zéro tout", use_container_width=True):
+    with col_act2:
+        if st.button("🗑️ Tout effacer", key="btn_raz_mob", use_container_width=True):
             st.session_state.selections.clear()
             st.session_state.quantites_custom.clear()
             st.session_state.articles_perso.clear()
             st.session_state.recettes_vues.clear()
             st.rerun()
 
-        st.markdown(f"<br><p style='color:{PALETTE['text_muted']}; font-size:14px;'>Cartes cochées : {len(st.session_state.selections)}<br>Articles distincts : {len(totaux_ingredients)}</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        recettes_choisies = [item for (sheet, item) in st.session_state.selections.keys() if sheet == "Recettes"]
+        texte_complet_dl = ""
+        if recettes_choisies:
+            texte_complet_dl += "🍽️ RECETTES:\n"
+            for r in recettes_choisies:
+                texte_complet_dl += f"- {r}\n"
+            texte_complet_dl += "\n"
+        texte_complet_dl += "📌 COURSES:\n"
+        for ing, qte in sorted(totaux_ingredients.items()):
+            q_str = str(int(qte)) if isinstance(qte, float) and qte.is_integer() else str(qte)
+            texte_complet_dl += f"- {ing} (x{q_str})\n"
 
-    with col_panel_droit:
-        st.markdown(
-            f"<div style='background-color:{PALETTE['header_bg']}; border:1.5px solid {PALETTE['border_card']}; border-radius:18px; padding:20px;'>"
-            f"<h3 style='color:{PALETTE['text_main']}; margin-top:0;'>🛒 Articles à Acheter</h3>",
-            unsafe_allow_html=True
+        st.download_button(
+            label="💾 Télécharger",
+            data=texte_complet_dl,
+            file_name="courses.txt",
+            mime="text/plain",
+            use_container_width=True
         )
 
-        if not totaux_ingredients:
-            st.info("⚠️ Votre liste est vide. Cochez des éléments dans les onglets précédents.")
-        else:
-            for ing, qte in sorted(totaux_ingredients.items()):
-                ing_emoji = obtenir_emoticon_item(ing)
-                r_col1, r_col2, r_col3, r_col4, r_col5 = st.columns([3, 1, 1, 1, 1])
-                
-                with r_col1:
-                    st.markdown(f"**{ing_emoji} {ing}**")
-                with r_col2:
-                    q_str = str(int(qte)) if isinstance(qte, float) and qte.is_integer() else str(qte)
-                    st.markdown(f"**x{q_str}**")
-                with r_col3:
-                    if st.button("➖", key=f"min_{ing}"):
-                        val = float(qte) if isinstance(qte, (int, float)) else 1.0
-                        val -= 1
-                        if val <= 0:
-                            if ing in st.session_state.quantites_custom:
-                                del st.session_state.quantites_custom[ing]
-                            if ing in st.session_state.articles_perso:
-                                st.session_state.articles_perso.remove(ing)
-                        else:
-                            st.session_state.quantites_custom[ing] = int(val) if val.is_integer() else round(val, 2)
-                        st.rerun()
-                with r_col4:
-                    if st.button("➕", key=f"plus_{ing}"):
-                        val = float(qte) if isinstance(qte, (int, float)) else 1.0
-                        val += 1
-                        st.session_state.quantites_custom[ing] = int(val) if val.is_integer() else round(val, 2)
-                        st.rerun()
-                with r_col5:
-                    if st.button("🗑️", key=f"del_{ing}"):
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Section Liste d'achats optimisée mobile (agencement vertical par article)
+    st.markdown(
+        f"<div style='background-color:{PALETTE['header_bg']}; border:1.5px solid {PALETTE['border_card']}; border-radius:15px; padding:15px;'>"
+        f"<h3 style='color:{PALETTE['text_main']}; margin-top:0; font-size:16px;'>🛒 À Acheter ({len(totaux_ingredients)})</h3>",
+        unsafe_allow_html=True
+    )
+
+    if not totaux_ingredients:
+        st.info("Votre liste est vide.")
+    else:
+        for ing, qte in sorted(totaux_ingredients.items()):
+            ing_emoji = obtenir_emoticon_item(ing)
+            q_str = str(int(qte)) if isinstance(qte, float) and qte.is_integer() else str(qte)
+            
+            # Affichage en bloc épuré pour chaque article sur mobile
+            st.markdown(f"**{ing_emoji} {ing}** (Qté: **{q_str}**)")
+            b_col1, b_col2, b_col3 = st.columns(3)
+            with b_col1:
+                if st.button("➖ Moins", key=f"min_{ing}", use_container_width=True):
+                    val = float(qte) if isinstance(qte, (int, float)) else 1.0
+                    val -= 1
+                    if val <= 0:
                         if ing in st.session_state.quantites_custom:
                             del st.session_state.quantites_custom[ing]
                         if ing in st.session_state.articles_perso:
                             st.session_state.articles_perso.remove(ing)
-                        to_remove = []
-                        for (sh, itm), mult in st.session_state.selections.items():
-                            df_s = dataframes[sh]
-                            if ing in df_s[df_s.columns[0]].values:
-                                to_remove.append((sh, itm))
-                        for tr in to_remove:
-                            del st.session_state.selections[tr]
-                        st.rerun()
-                st.markdown("<hr style='margin:5px 0; border:0; border-top:1px solid #E2E8F0;'>", unsafe_allow_html=True)
+                    else:
+                        st.session_state.quantites_custom[ing] = int(val) if val.is_integer() else round(val, 2)
+                    st.rerun()
+            with b_col2:
+                if st.button("➕ Plus", key=f"plus_{ing}", use_container_width=True):
+                    val = float(qte) if isinstance(qte, (int, float)) else 1.0
+                    val += 1
+                    st.session_state.quantites_custom[ing] = int(val) if val.is_integer() else round(val, 2)
+                    st.rerun()
+            with b_col3:
+                if st.button("🗑️ Suppr.", key=f"del_{ing}", use_container_width=True):
+                    if ing in st.session_state.quantites_custom:
+                        del st.session_state.quantites_custom[ing]
+                    if ing in st.session_state.articles_perso:
+                        st.session_state.articles_perso.remove(ing)
+                    to_remove = []
+                    for (sh, itm), mult in st.session_state.selections.items():
+                        df_s = dataframes[sh]
+                        if ing in df_s[df_s.columns[0]].values:
+                            to_remove.append((sh, itm))
+                    for tr in to_remove:
+                        del st.session_state.selections[tr]
+                    st.rerun()
+            st.markdown("<hr style='margin:10px 0; border:0; border-top:1px solid #E2E8F0;'>", unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
