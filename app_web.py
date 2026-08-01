@@ -304,7 +304,6 @@ if "Recettes" in dataframes:
                         card_bg_color = PALETTE["card_selected"] if est_selectionne else PALETTE["card_bg"]
                         border_col = PALETTE["border_selected"] if est_selectionne else PALETTE["border_card"]
                         
-                        # Correction de la syntaxe du badge et des symboles
                         badge_html = f"<span style='background-color:{bg_c}; color:{txt_c}; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:bold;'>{label_reg}</span>" if label_reg else "<span></span>"
                         check_symbol = '✓' if est_selectionne else '○'
                         check_color = PALETTE['border_selected'] if est_selectionne else '#94A3B8'
@@ -377,14 +376,15 @@ if "Recettes" in dataframes:
             st.markdown("</div>", unsafe_allow_html=True)
             
             if recettes_choisies:
-                if st.button("👁️ Prévisualiser & Copier", use_container_width=True):
+                # Ajout de key unique pour éviter le conflit d'ID
+                if st.button("👁️ Prévisualiser & Copier", key="preview_recettes_postit", use_container_width=True):
                     texte_rec = "🍽️ MES RECETTES SÉLECTIONNÉES :\n" + "═" * 35 + "\n"
                     for r in recettes_choisies:
                         texte_rec += f"• {obtenir_emoticon_item(r, 'Recettes')} {r}\n"
                     @st.dialog("Aperçu - Liste des Recettes")
                     def pop_preview_rec():
                         st.text_area("Texte :", value=texte_rec, height=200)
-                        if st.button("📋 Copier dans le presse-papier"):
+                        if st.button("📋 Copier dans le presse-papier", key="copy_btn_rec"):
                             st.toast("Texte prêt à être copié !")
                     pop_preview_rec()
 
@@ -523,7 +523,7 @@ with onglets[-1]:
             @st.dialog("Ajouter un article hors-liste")
             def pop_ajout_perso():
                 nom_perso = st.text_input("Nom de l'article :")
-                if st.button("Confirmer l'ajout"):
+                if st.button("Confirmer l'ajout", key="confirm_add_perso"):
                     if nom_perso and nom_perso.strip():
                         art_c = nom_perso.strip()
                         if art_c not in st.session_state.articles_perso:
@@ -531,7 +531,8 @@ with onglets[-1]:
                         st.rerun()
             pop_ajout_perso()
 
-        if st.button("👁️ Prévisualiser & Copier", use_container_width=True):
+        # Ajout de key unique pour éviter le conflit d'ID
+        if st.button("👁️ Prévisualiser & Copier", key="preview_global_courses", use_container_width=True):
             recettes_choisies = [item for (sheet, item) in st.session_state.selections.keys() if sheet == "Recettes"]
             texte_complet = ""
             if recettes_choisies:
@@ -635,4 +636,3 @@ with onglets[-1]:
                 st.markdown("<hr style='margin:5px 0; border:0; border-top:1px solid #E2E8F0;'>", unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
-        
